@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Smart PDF - PDF Compressor</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f3f7ff;
+    color: #19345c;
+}
+
+header {
+    background: linear-gradient(120deg, #1256c5, #2685ef);
+    color: white;
+    padding: 25px 15px;
+}
+
+.nav {
+    max-width: 1050px;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 27px;
+    font-weight: bold;
+}
+
+.nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+}
+
+.hero {
+    text-align: center;
+    padding: 55px 15px 35px;
+}
+
+.hero h1 {
+    font-size: 38px;
+    margin-bottom: 12px;
+}
+
+.hero p {
+    font-size: 17px;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 680px;
+    margin: 15px auto 45px;
+    padding: 30px;
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 8px 30px #dce6f5;
+    text-align: center;
+}
+
+.upload-box {
+    border: 2px dashed #2685ef;
+    border-radius: 14px;
+    padding: 35px 15px;
+    background: #f5f9ff;
+    margin: 25px 0;
+}
+
+.upload-box h3 {
+    color: #1769e0;
+}
+
+.upload-box.dragging {
+    background: #e1edff;
+    border-color: #0845a0;
+}
+
+input[type="file"] {
+    max-width: 100%;
+    margin-top: 15px;
+}
+
+select {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #1769e0;
+    border-radius: 8px;
+    margin-top: 12px;
+    font-size: 15px;
+    background: white;
+}
+
+button {
+    background: #1769e0;
+    color: white;
+    border: none;
+    padding: 14px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 18px;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #0b4cae;
+}
+
+button:disabled {
+    background: #91a9ca;
+    cursor: not-allowed;
+}
+
+#status {
+    margin-top: 20px;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+}
+
+.results {
+    display: none;
+    background: #f3f7ff;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 25px;
+    text-align: left;
+}
+
+.results h3 {
+    text-align: center;
+    color: #1769e0;
+}
+
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 5px;
+    border-bottom: 1px solid #d5e2f5;
+}
+
+.result-row b {
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+#downloadLink {
+    display: none;
+    text-decoration: none;
+}
+
+.features {
+    max-width: 950px;
+    margin: 45px auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 25px;
+}
+
+.feature {
+    background: white;
+    padding: 22px 12px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px #dce6f5;
+}
+
+.feature h3 {
+    color: #1769e0;
+}
+
+footer {
+    background: #123c79;
+    color: white;
+    text-align: center;
+    padding: 25px 15px;
+    margin-top: 35px;
+}
+
+@media(max-width:600px) {
+    .nav {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .nav a {
+        margin: 0 8px;
+    }
+
+    .hero h1 {
+        font-size: 29px;
+    }
+
+    .container {
+        margin: 15px;
+        padding: 20px;
+    }
+
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="nav">
+        <div class="logo">💙 Smart PDF</div>
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#compressor">Compress PDF</a>
+            <a href="#about">About</a>
+        </nav>
+    </div>
+
+    <section class="hero" id="home">
+        <h1>Compress PDFs. Save Space.</h1>
+        <p>
+            Reduce your PDF file size quickly and easily.
+            Simple, smart and convenient.
+        </p>
+    </section>
+</header>
+
+<main>
+
+<section class="container" id="compressor">
+
+    <h2>PDF Compressor</h2>
+    <p>Upload your PDF and choose your compression level.</p>
+
+    <div class="upload-box" id="dropArea">
+
+        <h3>📄 Upload Your PDF</h3>
+
+        <p>Drag and drop your PDF here</p>
+        <p>OR</p>
+
+        <input type="file"
+        id="pdfFile"
+        accept=".pdf,application/pdf">
+
+        <p id="fileName">No file selected</p>
+
+    </div>
+
+    <label for="quality"><b>Choose Compression Level</b></label>
+
+    <select id="quality">
+        <option value="low">Low - Better Quality</option>
+        <option value="medium" selected>Medium - Balanced</option>
+        <option value="high">High - Smaller File</option>
+    </select>
+
+    <button id="compressBtn" onclick="compressPDF()">
+        Compress PDF
+    </button>
+
+    <p id="status" aria-live="polite"></p>
+
+    <div class="results" id="results">
+
+        <h3>✨ Compression Results</h3>
+
+        <div class="result-row">
+            <span>Original Size</span>
+            <b id="originalSize"></b>
+        </div>
+
+        <div class="result-row">
+            <span>New Size</span>
+            <b id="newSize"></b>
+        </div>
+
+        <div class="result-row">
+            <span>Space Saved</span>
+            <b id="savedSize"></b>
+        </div>
+
+        <div class="result-row">
+            <span>Reduction</span>
+            <b id="percentage"></b>
+        </div>
+
+    </div>
+
+    <a id="downloadLink" download="Smart-PDF-compressed.pdf">
+        <button>⬇ Download Compressed PDF</button>
+    </a>
+
+</section>
+
+<section class="features" id="about">
+
+    <h2>Why Smart PDF?</h2>
+
+    <p>Simple tools for easier PDF management.</p>
+
+    <div class="feature-grid">
+
+        <div class="feature">
+            <h3>📁 Easy Upload</h3>
+            <p>Upload PDF files with a simple click or drag and drop.</p>
+        </div>
+
+        <div class="feature">
+            <h3>⚡ Fast Processing</h3>
+            <p>Compress your PDF directly in your browser.</p>
+        </div>
+
+        <div class="feature">
+            <h3>📥 Easy Download</h3>
+            <p>Download your compressed PDF in seconds.</p>
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+<footer>
+    <h2>💙 Smart PDF</h2>
+    <p>Compress PDFs. Save Space.</p>
+    <p>© 2026 Smart PDF. All rights reserved.</p>
+</footer>
+
+<script>
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const fileInput = document.getElementById("pdfFile");
+const dropArea = document.getElementById("dropArea");
+
+let currentURL = null;
+
+function showFileName(file) {
+    if (file) {
+        document.getElementById("fileName").textContent =
+            file.name;
+
+        document.getElementById("status").textContent = "";
+        document.getElementById("results").style.display = "none";
+        document.getElementById("downloadLink").style.display = "none";
+    }
+}
+
+fileInput.addEventListener("change", function() {
+    showFileName(this.files[0]);
+});
+
+dropArea.addEventListener("dragover", function(e) {
+    e.preventDefault();
+    dropArea.classList.add("dragging");
+});
+
+dropArea.addEventListener("dragleave", function() {
+    dropArea.classList.remove("dragging");
+});
+
+dropArea.addEventListener("drop", function(e) {
+    e.preventDefault();
+    dropArea.classList.remove("dragging");
+
+    const file = e.dataTransfer.files[0];
+
+    if (!file || file.type !== "application/pdf") {
+        document.getElementById("status").textContent =
+            "Please drop a valid PDF file.";
+        return;
+    }
+
+    fileInput.files = e.dataTransfer.files;
+    showFileName(file);
+});
+
+function formatSize(bytes) {
+    if (bytes < 1024) return bytes.toFixed(2) + " B";
+
+    if (bytes < 1024 * 1024) {
+        return (bytes / 1024).toFixed(2) + " KB";
+    }
+
+    return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+}
+
+async function compressPDF() {
+
+    const file = fileInput.files[0];
+
+    const status = document.getElementById("status");
+    const button = document.getElementById("compressBtn");
+    const download = document.getElementById("downloadLink");
+    const results = document.getElementById("results");
+
+    if (!file) {
+        status.textContent = "Please select a PDF file first.";
+        return;
+    }
+
+    if (file.type !== "application/pdf") {
+        status.textContent = "Please select a valid PDF file.";
+        return;
+    }
+
+    button.disabled = true;
+    download.style.display = "none";
+    results.style.display = "none";
+
+    if (currentURL) {
+        URL.revokeObjectURL(currentURL);
+        currentURL = null;
+    }
+
+    try {
+
+        const settings = {
+            low: { scale: 1.8, quality: 0.85 },
+            medium: { scale: 1.3, quality: 0.65 },
+            high: { scale: 0.9, quality: 0.40 }
+        };
+
+        const selected =
+            settings[document.getElementById("quality").value];
+
+        status.textContent = "Reading PDF...";
+
+        const buffer = await file.arrayBuffer();
+
+        const loadingTask = pdfjsLib.getDocument({
+            data: new Uint8Array(buffer)
+        });
+
+        const pdf = await loadingTask.promise;
+
+        const newPDF = await PDFLib.PDFDocument.create();
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+
+            status.textContent =
+                "Compressing page " + i + " of " + pdf.numPages;
+
+            const page = await pdf.getPage(i);
+
+            const viewport = page.getViewport({
+                scale: selected.scale
+            });
+
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+
+            if (!context) {
+                throw new Error("Canvas unavailable");
+            }
+
+            canvas.width = Math.ceil(viewport.width);
+            canvas.height = Math.ceil(viewport.height);
+
+            await page.render({
+                canvasContext: context,
+                viewport: viewport
+            }).promise;
+
+            const imageBlob = await new Promise(resolve => {
+                canvas.toBlob(resolve, "image/jpeg", selected.quality);
+            });
+
+            if (!imageBlob) {
+                throw new Error("Image conversion failed");
+            }
+
+            const imageBytes = await imageBlob.arrayBuffer();
+            const jpg = await newPDF.embedJpg(imageBytes);
+
+            const width = viewport.width / selected.scale;
+            const height = viewport.height / selected.scale;
+
+            const newPage = newPDF.addPage([width, height]);
+
+            newPage.drawImage(jpg, {
+                x: 0,
+                y: 0,
+                width: width,
+                height: height
+            });
+
+            canvas.width = 0;
+            canvas.height = 0;
+        }
+
+        status.textContent = "Preparing your PDF...";
+
+        const finalBytes = await newPDF.save();
+
+        const blob = new Blob(
+            [finalBytes],
+            { type: "application/pdf" }
+        );
+
+        currentURL = URL.createObjectURL(blob);
+
+        download.href = currentURL;
+
+        const difference = file.size - blob.size;
+
+        document.getElementById("originalSize").textContent =
+            formatSize(file.size);
+
+        document.getElementById("newSize").textContent =
+            formatSize(blob.size);
+
+        document.getElementById("savedSize").textContent =
+            difference > 0
+            ? formatSize(difference)
+            : difference < 0
+            ? formatSize(Math.abs(difference)) + " larger"
+            : "No change";
+
+        const percentage = difference > 0
+            ? ((difference / file.size) * 100).toFixed(1) + "% reduced"
+            : difference < 0
+            ? ((Math.abs(difference) / file.size) * 100).toFixed(1) + "% larger"
+            : "0%";
+
+        document.getElementById("percentage").textContent =
+            percentage;
+
+        results.style.display = "block";
+        download.style.display = "inline-block";
+
+        status.textContent = "✓ PDF compression completed!";
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "Unable to compress this PDF. Please try another file.";
+
+        download.style.display = "none";
+
+    } finally {
+
+        button.disabled = false;
+
+    }
+}
+
+</script>
+
+</body>
+</html>
